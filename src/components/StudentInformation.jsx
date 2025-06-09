@@ -8,7 +8,7 @@ const StudentInformation = ({ studentInfo, onUpdate }) => {
         <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
           1
         </div>
-        Student Information
+        SDFs Information
       </h2>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -25,7 +25,7 @@ const StudentInformation = ({ studentInfo, onUpdate }) => {
           type="email"
           value={studentInfo.email}
           onChange={(e) => onUpdate("email", e.target.value)}
-          placeholder="Enter your email address"
+          placeholder="Enter your Company email address"
           required={true}
         />
       </div>
