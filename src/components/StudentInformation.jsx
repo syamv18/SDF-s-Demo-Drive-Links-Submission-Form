@@ -16,7 +16,7 @@ const StudentInformation = ({ studentInfo, onUpdate }) => {
           label="Name"
           value={studentInfo.name}
           onChange={(e) => onUpdate("name", e.target.value)}
-          placeholder="Enter your full name"
+          placeholder="Enter your full name (Employee ID also)"
           required={true}
         />
 

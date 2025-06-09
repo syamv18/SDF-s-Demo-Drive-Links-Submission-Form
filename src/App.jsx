@@ -8,6 +8,9 @@ import { submitToGoogleSheets } from "./utils/googleSheets";
 const LOCAL_STORAGE_KEY = "sdf_form_data";
 
 const DemoSubmissionForm = () => {
+  useEffect(() => {
+    document.title = "SDFs Online Demo Drive Links Submissions";
+  }, []);
   // Load saved data from localStorage
   const loadSavedData = () => {
     try {
