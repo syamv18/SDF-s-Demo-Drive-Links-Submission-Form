@@ -7,8 +7,8 @@ const FormHeader = () => {
         SDF's Demo Drive Links Submission Form
       </h1>
       <p className="text-gray-600 leading-relaxed">
-        Submit your demo drive links using this form. All students are required
-        to share their demonstration materials through Google Drive. You can add
+        Submit your demo drive links using this form. All SDFs are required to
+        share their demonstration materials through Google Drive. You can add
         multiple demos in a single submission using the "Add Another Demo"
         button below.
       </p>

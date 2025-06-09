@@ -89,67 +89,15 @@
 
 //       console.log("Form Data to Submit:", formData);
 
-//       // TODO: Replace with actual Google Sheets API call
-//       // Example: await submitToGoogleSheets(formData);
-
-//       // In handleSubmit function, replace the simulation with:
-//       const handleSubmit = async () => {
-//         if (!isFormValid()) {
-//           setSubmitStatus({
-//             type: "error",
-//             message: "Please fill all required fields with valid data.",
-//           });
-//           return;
-//         }
-
-//         setIsSubmitting(true);
-//         setSubmitStatus(null);
-
-//         try {
-//           const formData = {
-//             studentInfo,
-//             demos,
-//             submissionTime: new Date().toISOString(),
-//           };
-
-//           console.log("Form Data to Submit:", formData);
-
-//           // REAL Google Sheets submission
-//           await submitToGoogleSheets(formData);
-
-//           setSubmitStatus({
-//             type: "success",
-//             message: `Successfully submitted ${demos.length} demo(s)! Data has been saved to Google Sheets.`,
-//           });
-
-//           // Reset form
-//           setStudentInfo({ name: "", email: "" });
-//           setDemos([
-//             {
-//               id: 1,
-//               topicName: "",
-//               demoDate: "",
-//               driveLink: "",
-//               editorAccess: "",
-//             },
-//           ]);
-//         } catch (error) {
-//           setSubmitStatus({
-//             type: "error",
-//             message: "Submission failed. Please try again.",
-//           });
-//         }
-
-//         setIsSubmitting(false);
-//       };
-
-//       // Simulate API call
-//       await new Promise((resolve) => setTimeout(resolve, 2000));
+//       // REAL Google Sheets submission
+//       await submitToGoogleSheets(formData);
 
 //       setSubmitStatus({
 //         type: "success",
 //         message: `Successfully submitted ${demos.length} demo(s)! Data has been saved to Google Sheets.`,
 //       });
+
+//       // localStorage.clear();
 
 //       // Reset form
 //       setStudentInfo({ name: "", email: "" });
@@ -200,57 +148,78 @@
 
 // export default DemoSubmissionForm;
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FormHeader from "./components/FormHeader";
 import StudentInformation from "./components/StudentInformation";
 import DemoSubmissions from "./components/DemoSubmissions";
 import SubmitSection from "./components/SubmitSection";
 import { submitToGoogleSheets } from "./utils/googleSheets";
 
+const LOCAL_STORAGE_KEY = "sdf_form_data";
+
 const DemoSubmissionForm = () => {
-  const [studentInfo, setStudentInfo] = useState({
-    name: "",
-    email: "",
-  });
+  // 1. Load saved data on first render
+  const loadSavedData = () => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (err) {
+      console.error("Error loading saved data:", err);
+    }
+    return {
+      studentInfo: { name: "", email: "" },
+      demos: [
+        {
+          id: 1,
+          topicName: "",
+          demoDate: "",
+          driveLink: "",
+          editorAccess: "",
+        },
+      ],
+    };
+  };
 
-  const [demos, setDemos] = useState([
-    {
-      id: 1,
-      topicName: "",
-      demoDate: "",
-      driveLink: "",
-      editorAccess: "",
-    },
-  ]);
-
+  const [studentInfo, setStudentInfo] = useState(loadSavedData().studentInfo);
+  const [demos, setDemos] = useState(loadSavedData().demos);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
+  // 2. Persist to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify({ studentInfo, demos })
+    );
+  }, [studentInfo, demos]);
+
+  const updateStudentInfo = (field, value) => {
+    setStudentInfo((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateDemo = (id, field, value) => {
+    setDemos((prev) =>
+      prev.map((demo) => (demo.id === id ? { ...demo, [field]: value } : demo))
+    );
+  };
+
   const addDemo = () => {
-    const newDemo = {
-      id: Date.now(),
-      topicName: "",
-      demoDate: "",
-      driveLink: "",
-      editorAccess: "",
-    };
-    setDemos([...demos, newDemo]);
+    setDemos((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        topicName: "",
+        demoDate: "",
+        driveLink: "",
+        editorAccess: "",
+      },
+    ]);
   };
 
   const removeDemo = (id) => {
     if (demos.length > 1) {
       setDemos(demos.filter((demo) => demo.id !== id));
     }
-  };
-
-  const updateDemo = (id, field, value) => {
-    setDemos(
-      demos.map((demo) => (demo.id === id ? { ...demo, [field]: value } : demo))
-    );
-  };
-
-  const updateStudentInfo = (field, value) => {
-    setStudentInfo({ ...studentInfo, [field]: value });
   };
 
   const validateDriveLink = (url) => {
@@ -289,22 +258,27 @@ const DemoSubmissionForm = () => {
         submissionTime: new Date().toISOString(),
       };
 
-      console.log("Form Data to Submit:", formData);
-
-      // REAL Google Sheets submission
+      console.log("Submitting:", formData);
       await submitToGoogleSheets(formData);
 
       setSubmitStatus({
         type: "success",
-        message: `Successfully submitted ${demos.length} demo(s)! Data has been saved to Google Sheets.`,
+        message: `Successfully submitted ${demos.length} demo(s)!`,
       });
 
-      // Reset form
+      // 3. Clear localStorage and reset form
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
       setStudentInfo({ name: "", email: "" });
       setDemos([
-        { id: 1, topicName: "", demoDate: "", driveLink: "", editorAccess: "" },
+        {
+          id: 1,
+          topicName: "",
+          demoDate: "",
+          driveLink: "",
+          editorAccess: "",
+        },
       ]);
-    } catch (error) {
+    } catch (err) {
       setSubmitStatus({
         type: "error",
         message: "Submission failed. Please try again.",
